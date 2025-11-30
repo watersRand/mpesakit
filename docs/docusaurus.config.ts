@@ -58,8 +58,8 @@ const config: Config = {
   ],
 
   themeConfig: {
-    Favicon: 'img/favicon.ico',
-    Image: 'img/favicon.svg',
+    Favicon: 'img/favicon.png',
+    Image: 'img/favicon.png',
     docs: {
       sidebar: {
         hideable: false, // This is the default, shows the sidebar
@@ -75,7 +75,7 @@ const config: Config = {
       title: 'MpesaKit',
       logo: {
         alt: 'MpesaKit Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo.png',
       },
       items: [
         {
