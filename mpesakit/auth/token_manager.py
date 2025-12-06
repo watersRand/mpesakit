@@ -88,10 +88,7 @@ class TokenManager(BaseModel):
 
 
 class AsyncTokenManager(BaseModel):
-    """
-    Handles retrieval, storage, and refreshing of access tokens for M-Pesa API authentication
-    asynchronously.
-    """
+    """Handles retrieval, storage, and refreshing of access tokens for M-Pesa API authentication asynchronously."""
 
     consumer_key: str
     consumer_secret: str
