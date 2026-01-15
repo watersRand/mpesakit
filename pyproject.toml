@@ -24,8 +24,6 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
   "Typing :: Typed",
 ]
-description = "A Python SDK for integrating with M-Pesa APIs"
-dynamic = ["version"]
 keywords = [
   "mpesa",
   "sdk",
@@ -39,13 +37,9 @@ keywords = [
   "mobile money",
   "payments",
 ]
-license = {text = "APACHE-2.0"}
 maintainers = [
   {name = "John Kagunda", email = "johnmkagunda@gmail.com"},
 ]
-name = "mpesakit"
-readme = "README.md"
-requires-python = ">=3.12"
 
 dependencies = [
   "pydantic >=2.10.6,<3.0.0",
