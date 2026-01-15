@@ -3,21 +3,25 @@
 Handles GET and POST requests with error handling for common HTTP issues.
 """
 
-from typing import Dict, Any, Optional
+import logging
+from typing import Any, Dict, Optional
+
 import requests
 from tenacity import (
+    RetryCallState,
+    before_sleep_log,
     retry,
-    stop_after_attempt,
-    wait_fixed,
     retry_if_exception_type,
-    RetryCallState
+    stop_after_attempt,
+    wait_random_exponential,
 )
-import logging
-from mpesakit.errors import MpesaError, MpesaApiException
+
+from mpesakit.errors import MpesaApiException, MpesaError
+
 from .http_client import HttpClient
 
-
 logger = logging.getLogger(__name__)
+
 
 def handle_request_error(response: requests.Response):
     """Handles non-successful HTTP responses.
@@ -41,15 +45,15 @@ def handle_request_error(response: requests.Response):
             )
         )
 
+
 def handle_retry_exception(retry_state: RetryCallState):
     """Custom hook to handle exceptions after all retries fail.
 
     It raises a custom MpesaApiException with the appropriate error code.
     """
-    
     if retry_state.outcome:
         exception = retry_state.outcome.exception()
-        
+
         if isinstance(exception, requests.exceptions.Timeout):
             raise MpesaApiException(
                 MpesaError(error_code="REQUEST_TIMEOUT", error_message=str(exception))
@@ -58,15 +62,38 @@ def handle_retry_exception(retry_state: RetryCallState):
             raise MpesaApiException(
                 MpesaError(error_code="CONNECTION_ERROR", error_message=str(exception))
             ) from exception
-        
+
         raise MpesaApiException(
             MpesaError(error_code="REQUEST_FAILED", error_message=str(exception))
         ) from exception
-    
-    
+
     raise MpesaApiException(
-        MpesaError(error_code="REQUEST_FAILED", error_message="An unknown retry error occurred.")
+        MpesaError(
+            error_code="REQUEST_FAILED",
+            error_message="An unknown retry error occurred.",
+        )
     )
+
+
+def retry_enabled(enabled: bool):
+    """Factory function to conditionally enable retries.
+
+    Args:
+        enabled (bool): Whether to enable retry logic.
+
+    Returns:
+        A retry condition function.
+    """
+    base_retry = retry_if_exception_type(
+        requests.exceptions.Timeout
+    ) | retry_if_exception_type(requests.exceptions.ConnectionError)
+
+    def _retry(retry_state):
+        if not enabled:
+            return False
+        return base_retry(retry_state)
+
+    return _retry
 
 
 class MpesaHttpClient(HttpClient):
@@ -93,12 +120,11 @@ class MpesaHttpClient(HttpClient):
         return "https://sandbox.safaricom.co.ke"
 
     @retry(
-        retry=retry_if_exception_type(requests.exceptions.Timeout) |
-              retry_if_exception_type(requests.exceptions.ConnectionError)|
-              retry_if_exception_type(requests.exceptions.RequestException),
-        wait=wait_fixed(2),
+        retry=retry_enabled(enabled=True),
+        wait=wait_random_exponential(multiplier=5, max=8),
         stop=stop_after_attempt(3),
-        retry_error_callback=handle_retry_exception
+        retry_error_callback=handle_retry_exception,
+        before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def post(
         self, url: str, json: Dict[str, Any], headers: Dict[str, str]
@@ -115,22 +141,22 @@ class MpesaHttpClient(HttpClient):
         """
         full_url = f"{self.base_url}{url}"
         if self._session:
-            response = self._session.post(full_url, json=json, headers=headers, timeout=10)
+            response = self._session.post(
+                full_url, json=json, headers=headers, timeout=10
+            )
         else:
             response = requests.post(full_url, json=json, headers=headers, timeout=10)
 
         handle_request_error(response)
-        
+
         return response.json()
 
     @retry(
-        retry=retry_if_exception_type(requests.exceptions.Timeout) |
-              retry_if_exception_type(requests.exceptions.ConnectionError)|
-              retry_if_exception_type(requests.exceptions.RequestException),
-
-        wait=wait_fixed(2),
+        retry=retry_enabled(enabled=True),
+        wait=wait_random_exponential(multiplier=5, max=8),
         stop=stop_after_attempt(3),
-        retry_error_callback=handle_retry_exception
+        retry_error_callback=handle_retry_exception,
+        before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def get(
         self,
@@ -152,10 +178,28 @@ class MpesaHttpClient(HttpClient):
             headers = {}
         full_url = f"{self.base_url}{url}"
         if self._session:
-            response = self._session.get(full_url, params=params, headers=headers, timeout=10)
+            response = self._session.get(
+                full_url, params=params, headers=headers, timeout=10
+            )
         else:
-            response = requests.get(full_url, params=params, headers=headers, timeout=10)
+            response = requests.get(
+                full_url, params=params, headers=headers, timeout=10
+            )
 
         handle_request_error(response)
 
         return response.json()
+
+    def close(self) -> None:
+        """Closes the persistent session if it exists."""
+        if self._session:
+            self._session.close()
+            self._session = None
+
+    def __enter__(self) -> "MpesaHttpClient":
+        """Context manager entry point."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Context manager exit point. Closes the session."""
+        self.close()
