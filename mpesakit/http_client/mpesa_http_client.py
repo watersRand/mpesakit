@@ -127,8 +127,20 @@ class MpesaHttpClient(HttpClient):
         retry_error_callback=handle_retry_exception,
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
+    def _raw_post(
+        self, url: str, json: Dict[str, Any], headers: Dict[str, str], timeout: int = 10
+    ) -> requests.Response:
+        """Low-level POST request - may raise requests exceptions."""
+        full_url = urljoin(self.base_url, url)
+        if self._session:
+            return self._session.post(
+                full_url, json=json, headers=headers, timeout=timeout
+            )
+        else:
+            return requests.post(full_url, json=json, headers=headers, timeout=timeout)
+
     def post(
-        self, url: str, json: Dict[str, Any], headers: Dict[str, str]
+        self, url: str, json: Dict[str, Any], headers: Dict[str, str], timeout: int = 10
     ) -> Dict[str, Any]:
         """Sends a POST request to the M-Pesa API.
 
@@ -136,26 +148,20 @@ class MpesaHttpClient(HttpClient):
             url (str): The URL path for the request.
             json (Dict[str, Any]): The JSON payload for the request body.
             headers (Dict[str, str]): The HTTP headers for the request.
+            timeout (int): The timeout for the request in seconds.
 
         Returns:
             Dict[str, Any]: The JSON response from the API.
         """
-        full_url = urljoin(self.base_url, url)
-        if self._session:
-            response = self._session.post(
-                full_url, json=json, headers=headers, timeout=10
-            )
-        else:
-            response = requests.post(full_url, json=json, headers=headers, timeout=10)
-
-        handle_request_error(response)
-
+        response: requests.Response | None = None
         try:
+            response = self._raw_post(url, json, headers, timeout)
+            handle_request_error(response)
             return response.json()
-        except ValueError as e:
+        except (requests.RequestException, ValueError) as e:
             raise MpesaApiException(
                 MpesaError(
-                    error_code="JSON_DECODE_ERROR",
+                    error_code="REQUEST_FAILED",
                     error_message=str(e),
                     status_code=getattr(response, "status_code", None),
                     raw_response=getattr(response, "text", None),
@@ -169,6 +175,23 @@ class MpesaHttpClient(HttpClient):
         retry_error_callback=handle_retry_exception,
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
+    def _raw_get(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> requests.Response:
+        """Low-level GET request - may raise requests exceptions."""
+        if headers is None:
+            headers = {}
+        full_url = urljoin(self.base_url, url)
+        if self._session:
+            return self._session.get(
+                full_url, params=params, headers=headers, timeout=10
+            )
+        else:
+            return requests.get(full_url, params=params, headers=headers, timeout=10)
+
     def get(
         self,
         url: str,
@@ -185,26 +208,15 @@ class MpesaHttpClient(HttpClient):
         Returns:
             Dict[str, Any]: The JSON response from the API.
         """
-        if headers is None:
-            headers = {}
-        full_url = urljoin(self.base_url, url)
-        if self._session:
-            response = self._session.get(
-                full_url, params=params, headers=headers, timeout=10
-            )
-        else:
-            response = requests.get(
-                full_url, params=params, headers=headers, timeout=10
-            )
-
-        handle_request_error(response)
-
+        response: requests.Response | None = None
         try:
+            response = self._raw_get(url, params, headers)
+            handle_request_error(response)
             return response.json()
-        except ValueError as e:
+        except (requests.RequestException, ValueError) as e:
             raise MpesaApiException(
                 MpesaError(
-                    error_code="JSON_DECODE_ERROR",
+                    error_code="REQUEST_FAILED",
                     error_message=str(e),
                     status_code=getattr(response, "status_code", None),
                     raw_response=getattr(response, "text", None),
