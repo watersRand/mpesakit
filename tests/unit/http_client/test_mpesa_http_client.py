@@ -23,7 +23,7 @@ def client(request):
         yield client
     finally:
         if client._session:
-            client._session.close()
+            client.close()
 
 
 def get_patch_target(client, method):
