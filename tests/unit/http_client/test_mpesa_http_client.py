@@ -17,7 +17,13 @@ from mpesakit.http_client.mpesa_http_client import MpesaHttpClient
 def client(request):
     """Fixture to provide a MpesaHttpClient instance in sandbox environment both in session and non-session modes."""
     use_session = request.param
-    return MpesaHttpClient(env="sandbox", use_session=use_session)
+    client = MpesaHttpClient(env="sandbox", use_session=use_session)
+
+    try:
+        yield client
+    finally:
+        if client._session:
+            client._session.close()
 
 
 def get_patch_target(client, method):
