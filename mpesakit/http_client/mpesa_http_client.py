@@ -186,6 +186,7 @@ class MpesaHttpClient(HttpClient):
         url: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        timeout: int = 10,
     ) -> httpx.Response:
         """Low-level GET request - may raise httpx exceptions."""
         if headers is None:
@@ -193,17 +194,20 @@ class MpesaHttpClient(HttpClient):
         full_url = urljoin(self.base_url, url)
         if self._client:
             return self._client.get(
-                full_url, params=params, headers=headers, timeout=10
+                full_url, params=params, headers=headers, timeout=timeout
             )
         else:
             with httpx.Client() as client:
-                return client.get(full_url, params=params, headers=headers, timeout=10)
+                return client.get(
+                    full_url, params=params, headers=headers, timeout=timeout
+                )
 
     def get(
         self,
         url: str,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        timeout: int = 10,
     ) -> Dict[str, Any]:
         """Sends a GET request to the M-Pesa API.
 
@@ -217,7 +221,7 @@ class MpesaHttpClient(HttpClient):
         """
         response: httpx.Response | None = None
         try:
-            response = self._raw_get(url, params, headers)
+            response = self._raw_get(url, params, headers, timeout)
             handle_request_error(response)
             return response.json()
         except (httpx.RequestError, ValueError) as e:
