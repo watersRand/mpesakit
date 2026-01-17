@@ -215,6 +215,7 @@ class MpesaHttpClient(HttpClient):
             url (str): The URL path for the request.
             params (Optional[Dict[str, Any]]): The URL parameters.
             headers (Optional[Dict[str, str]]): The HTTP headers.
+            timeout (int): The timeout for the request in seconds.
 
         Returns:
             Dict[str, Any]: The JSON response from the API.
