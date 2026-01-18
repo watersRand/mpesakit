@@ -4,7 +4,7 @@ This module tests the B2B Express Checkout API client, ensuring it can handle US
 process responses correctly, and manage callback/error cases.
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -141,7 +141,7 @@ def test_b2b_express_callback_resultcode_as_string():
 @pytest.fixture
 def mock_async_token_manager():
     """Mock AsyncTokenManager to return a fixed token."""
-    mock = MagicMock(spec=AsyncTokenManager)
+    mock = AsyncMock(spec=AsyncTokenManager)
     mock.get_token.return_value = "async_test_token"
     return mock
 
@@ -149,7 +149,7 @@ def mock_async_token_manager():
 @pytest.fixture
 def mock_async_http_client():
     """Mock AsyncHttpClient to simulate async HTTP requests."""
-    return MagicMock(spec=AsyncHttpClient)
+    return AsyncMock(spec=AsyncHttpClient)
 
 
 @pytest.fixture
