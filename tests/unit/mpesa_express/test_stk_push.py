@@ -184,7 +184,9 @@ def async_stk_push(mock_async_http_client, mock_async_token_manager):
 
 
 @pytest.mark.asyncio
-async def test_async_push_success(async_stk_push, mock_async_http_client):
+async def test_async_push_success(
+    async_stk_push, mock_async_http_client, mock_async_token_manager
+):
     """Test that a successful async STK Push transaction can be initiated."""
     request = StkPushSimulateRequest(
         BusinessShortCode=174379,
@@ -213,14 +215,16 @@ async def test_async_push_success(async_stk_push, mock_async_http_client):
     assert isinstance(response, StkPushSimulateResponse)
     assert response.MerchantRequestID == "12345"
     assert response.is_successful() is True
-    mock_async_http_client.post.assert_called_once()
+    mock_async_http_client.post.assert_awaited_once()
     args, kwargs = mock_async_http_client.post.call_args
     assert args[0] == "/mpesa/stkpush/v1/processrequest"
     assert kwargs["headers"]["Authorization"] == "Bearer test_token"
 
 
 @pytest.mark.asyncio
-async def test_async_query_success(async_stk_push, mock_async_http_client):
+async def test_async_query_success(
+    async_stk_push, mock_async_http_client, mock_async_token_manager
+):
     """Test that the status of an async STK Push transaction can be queried successfully."""
     request = StkPushQueryRequest(
         BusinessShortCode=174379,
@@ -243,7 +247,7 @@ async def test_async_query_success(async_stk_push, mock_async_http_client):
     assert isinstance(response, StkPushQueryResponse)
     assert response.is_successful() is True
     assert response.CheckoutRequestID == "ws_CO_260520211133524545"
-    mock_async_http_client.post.assert_called_once()
+    mock_async_http_client.post.assert_awaited_once()
     args, kwargs = mock_async_http_client.post.call_args
     assert args[0] == "/mpesa/stkpushquery/v1/query"
     assert kwargs["headers"]["Authorization"] == "Bearer test_token"
