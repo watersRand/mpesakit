@@ -161,7 +161,7 @@ class AsyncBillManager(BaseModel):
     def _ensure_app_key(self):
         if self.app_key is None:
             raise ValueError(
-                "app_key must be set for this operation. You must pass it when initializing BillManager."
+                "app_key must be set for this operation. You must pass it when initializing AsyncBillManager."
             )
 
     async def update_opt_in(
