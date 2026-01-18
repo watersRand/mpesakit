@@ -475,10 +475,10 @@ async def test_async_send_payment_success(
 
 
 @pytest.mark.asyncio
-async def test_async_send_payment_http_error(
+async def test_async_send_payment_token_error(
     async_b2c, mock_async_http_client, mock_async_token_manager
 ):
-    """Test that async B2C payment handles HTTP errors gracefully."""
+    """Test that async B2C payment handles token errors gracefully."""
     request = valid_b2c_request()
     mock_async_token_manager.get_token.side_effect = Exception("Token error")
 
