@@ -1,4 +1,4 @@
-from .b2b import B2BService
+from .b2b import B2BService, AsyncB2BService
 from .b2c import B2CService
 from .balance import BalanceService
 from .bill import BillService

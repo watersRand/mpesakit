@@ -1,10 +1,13 @@
 """Facade for M-Pesa B2B APIs (Express Checkout)."""
 
 from typing import Optional
-from mpesakit.auth import TokenManager
-from mpesakit.http_client import HttpClient
+from mpesakit.auth import TokenManager, AsyncTokenManager
+from mpesakit.http_client import HttpClient, AsyncHttpClient
+from mpesakit.b2b_express_checkout import AsyncB2BExpressCheckout
+from mpesakit.business_paybill import AsyncBusinessPayBill
 from mpesakit.business_buy_goods import (
     BusinessBuyGoods,
+    AsyncBusinessBuyGoods,
     BusinessBuyGoodsRequest,
     BusinessBuyGoodsResponse,
 )
@@ -186,3 +189,123 @@ class B2BService:
             },
         )
         return self._business_buygoods.buy_goods(request)
+
+class AsyncB2BService:
+    """Async facade for all M-Pesa B2B APIs."""
+
+    def __init__(self, http_client: AsyncHttpClient, token_manager: AsyncTokenManager) -> None:
+        """Initialize Async B2BService facade."""
+        self.http_client = http_client
+        self.token_manager = token_manager
+
+
+        self._express_checkout = AsyncB2BExpressCheckout(
+            http_client=self.http_client,
+            token_manager=self.token_manager,
+        )
+        self._business_paybill = AsyncBusinessPayBill(
+            http_client=self.http_client,
+            token_manager=self.token_manager,
+        )
+        self._business_buygoods = AsyncBusinessBuyGoods(
+            http_client=self.http_client,
+            token_manager=self.token_manager,
+        )
+
+    async def express_checkout(
+        self,
+        primary_short_code: str,
+        receiver_short_code: str,
+        amount: int,
+        payment_ref: str,
+        callback_url: str,
+        partner_name: str,
+        request_ref_id: str,
+        **kwargs,
+    ) -> B2BExpressCheckoutResponse:
+        """Initiate a B2B Express Checkout USSD Push transaction to another merchant."""
+        request = B2BExpressCheckoutRequest(
+            primaryShortCode=primary_short_code,
+            receiverShortCode=receiver_short_code,
+            amount=amount,
+            paymentRef=payment_ref,
+            callbackUrl=callback_url,
+            partnerName=partner_name,
+            RequestRefID=request_ref_id,
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k in B2BExpressCheckoutRequest.model_fields
+            },
+        )
+        return await self._express_checkout.ussd_push(request)
+
+    async def paybill(
+        self,
+        initiator: str,
+        security_credential: str,
+        amount: int,
+        party_a: int,
+        party_b: int,
+        account_reference: str,
+        requester: str,
+        remarks: str,
+        queue_timeout_url: str,
+        result_url: str,
+        **kwargs,
+    ) -> BusinessPayBillResponse:
+        """Initiate a Business PayBill transaction to another merchant."""
+        request = BusinessPayBillRequest(
+            Initiator=initiator,
+            SecurityCredential=security_credential,
+            Amount=amount,
+            PartyA=party_a,
+            PartyB=party_b,
+            AccountReference=account_reference,
+            Requester=requester,
+            Remarks=remarks,
+            QueueTimeOutURL=queue_timeout_url,
+            ResultURL=result_url,
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k in BusinessPayBillRequest.model_fields
+            },
+        )
+        return await self._business_paybill.paybill(request)
+
+    async def buygoods(
+        self,
+        initiator: str,
+        security_credential: str,
+        amount: int,
+        party_a: int,
+        party_b: int,
+        account_reference: str,
+        requester: str,
+        remarks: str,
+        queue_timeout_url: str,
+        result_url: str,
+        occassion: Optional[str] = None,
+        **kwargs,
+    ) -> BusinessBuyGoodsResponse:
+        """Initiate a Business Buy Goods transaction to another merchant."""
+        request = BusinessBuyGoodsRequest(
+            Initiator=initiator,
+            SecurityCredential=security_credential,
+            Amount=amount,
+            PartyA=party_a,
+            PartyB=party_b,
+            AccountReference=account_reference,
+            Requester=requester,
+            Remarks=remarks,
+            QueueTimeOutURL=queue_timeout_url,
+            ResultURL=result_url,
+            Occassion=occassion,
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k in BusinessBuyGoodsRequest.model_fields
+            },
+        )
+        return await self._business_buygoods.buy_goods(request)
