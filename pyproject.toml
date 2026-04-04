@@ -13,7 +13,7 @@ authors = [
   {name = "John Kagunda", email = "johnmkagunda@gmail.com"},
 ]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3.10",
@@ -132,3 +132,27 @@ testpaths = ["tests"]
 [tool.mypy]
 plugins = ["pydantic.mypy"]
 warn_unused_ignores = true
+
+[tool.hatch.envs.default]
+features = ["dev"]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest"
+test-unit = "pytest -m 'not live'"
+test-integration = "pytest -m live"
+lint = "ruff check ."
+format = "ruff format ."
+format-check = "ruff format --check ."
+typecheck = "mypy mpesakit tests"
+security = "bandit -q -r mpesakit"
+check = [
+  "lint",
+  "format-check",
+  "typecheck",
+  "security",
+  "test-unit",
+]
+ci = [
+  "check",
+  "test-integration",
+]

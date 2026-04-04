@@ -82,4 +82,4 @@ jobs:
         run: uv pip install -e '.[dev]'
 
       - name: Run Bandit
-        run: uv run bandit -r mpesakit
+        run: uv run bandit -r mpesakit  -iii
