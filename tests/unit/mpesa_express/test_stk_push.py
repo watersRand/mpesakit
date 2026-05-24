@@ -40,23 +40,6 @@ def stk_push(mock_http_client, mock_token_manager):
     """Fixture to create an instance of StkPush with mocked dependencies."""
     return StkPush(http_client=mock_http_client, token_manager=mock_token_manager)
 
-
-def build_stk_push_simulate_request():
-    return StkPushSimulateRequest(
-        BusinessShortCode=174379,
-        Password="test_password",
-        Timestamp="20220101010101",
-        TransactionType="CustomerPayBillOnline",
-        Amount=10,
-        PartyA="254700000000",
-        PartyB="174379",
-        PhoneNumber="254700000000",
-        CallBackURL="https://test.com/callback",
-        AccountReference="TestAccount",
-        TransactionDesc="Test Payment",
-    )
-
-
 def test_push_success(stk_push, mock_http_client):
     """Test that a successful STK Push transaction can be initiated."""
     request = StkPushSimulateRequest(
@@ -182,7 +165,20 @@ def test_stk_push_simulate_request_invalid_transaction_type():
 @pytest.mark.parametrize("use_session", [True, False])
 def test_stk_push_simulation_session_behavior(use_session, mock_token_manager):
     """Test repeated STK Push simulation with and without the sync HTTP client session."""
-    request = build_stk_push_simulate_request()
+    request = StkPushSimulateRequest(
+        BusinessShortCode=174379,
+        Password="test_password",
+        Timestamp="20220101010101",
+        TransactionType="CustomerPayBillOnline",
+        Amount=10,
+        PartyA="254700000000",
+        PartyB="174379",
+        PhoneNumber="254700000000",
+        CallBackURL="https://test.com/callback",
+        AccountReference="TestAccount",
+        TransactionDesc="Test Payment",
+    )
+
     response_data = {
         "MerchantRequestID": "12345",
         "CheckoutRequestID": "ws_CO_260520211133524545",
@@ -355,7 +351,20 @@ async def test_async_query_handles_http_error(async_stk_push, mock_async_http_cl
 @pytest.mark.asyncio
 async def test_async_stk_push_simulation_repeated_calls(async_stk_push, mock_async_http_client):
     """Test repeated async STK Push simulation calls with the async client."""
-    request = build_stk_push_simulate_request()
+    request = StkPushSimulateRequest(
+        BusinessShortCode=174379,
+        Password="test_password",
+        Timestamp="20220101010101",
+        TransactionType="CustomerPayBillOnline",
+        Amount=10,
+        PartyA="254700000000",
+        PartyB="174379",
+        PhoneNumber="254700000000",
+        CallBackURL="https://test.com/callback",
+        AccountReference="TestAccount",
+        TransactionDesc="Test Payment",
+    )
+
     response_data = {
         "MerchantRequestID": "12345",
         "CheckoutRequestID": "ws_CO_260520211133524545",
