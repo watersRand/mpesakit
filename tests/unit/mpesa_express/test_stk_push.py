@@ -211,13 +211,13 @@ def test_stk_push_simulation_session_behavior(use_session, mock_token_manager):
         assert client._client is None
         with patch("mpesakit.http_client.mpesa_http_client.httpx.Client.post", return_value=httpx.Response(200, json=response_data)) as mock_post:
             success_count = 0
-            for _ in range(98):
+            for _ in range(100):
                 response = stk_push.push(request)
                 if response.is_successful():
                     success_count += 1
 
-            assert success_count == 98
-            assert mock_post.call_count == 98
+            assert success_count == 100
+            assert mock_post.call_count == 100
 
     if client._client is not None:
         client.close()
@@ -369,11 +369,11 @@ async def test_async_stk_push_simulation_repeated_calls(async_stk_push, mock_asy
     mock_async_http_client.post.return_value = response_data
 
     success_count = 0
-    for _ in range(99):
+    for _ in range(100):
         response = await async_stk_push.push(request)
         if response.is_successful():
             success_count += 1
 
-    assert success_count == 99
-    assert mock_async_http_client.post.call_count == 99
+    assert success_count == 100
+    assert mock_async_http_client.post.call_count == 100
 
