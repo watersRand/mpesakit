@@ -346,6 +346,7 @@ class TestCallbackProcessing:
         assert result.Result.ConversationID == "AN41320161328197f28cc1d183985ef4f1"
 
     def test_unified_stk_routing(self, client):
+        """Test processing unified stk_callback payload."""
         payload = {
             "Body": {
                 "stkCallback": {
@@ -362,6 +363,7 @@ class TestCallbackProcessing:
         assert result.Body.stkCallback.MerchantRequestID == "29115-34620561-1"
 
     def test_unified_ratiba_routing(self, client):
+        """Test processing unified ratiba_callback payload."""
         payload ={
                 "ResponseHeader": {
                     "responseRefID": "0acc0239-20fa-4a52-8b9d-9bd64c0465c3",
