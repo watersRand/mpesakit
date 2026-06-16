@@ -158,7 +158,6 @@ class DynamicQRGenerateResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "ResponseCode": "00",
-                "RequestID": "16738-27456357-1",
                 "ResponseDescription": "QR Code Successfully Generated.",
                 "QRCode": "iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAIAAAD2HxkiAAAHtElEQVR42...",
             }
