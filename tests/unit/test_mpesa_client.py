@@ -243,7 +243,7 @@ class TestCallbackProcessing:
                 
             }
         }
-        result = client.process_transcations_callback(payload)
+        result = client.process_transactions_callback(payload)
         assert result.Result.ResultCode == 0
         assert result.Result.ConversationID == "AN41320161328197f28cc1d183985ef4f1"
 
