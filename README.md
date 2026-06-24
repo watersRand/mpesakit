@@ -1,65 +1,22 @@
 # mpesakit
 
-> ⚡ **Effortless M-Pesa integration** using Safaricom's Daraja API — built for developers, by developers.
+> ⚡ Effortless M-Pesa integration using Safaricom's Daraja API — built for developers, by developers.
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-
-[![PyPI version](https://img.shields.io/pypi/v/mpesakit.svg)](https://pypi.org/project/mpesakit) [![Downloads](https://pepy.tech/badge/mpesakit)](https://pepy.tech/project/mpesakit)
----
-
-## The Problem
-
-Integrating Safaricom's **M-Pesa Daraja API** directly is **notoriously complex**:
-
-- Confusing and inconsistent documentation
-- Manual handling of OAuth2 tokens and security credentials
-- Complex encryption and certificate management
-- Different endpoints for sandbox vs production environments
-- STK Push, C2B, B2C, balance — all feel like separate APIs
-- Time-consuming setup that delays your time-to-market
-
-For many developers and startups, this becomes a **huge barrier** to adopting M-Pesa payments in Kenya and beyond.
+[![PyPI version](https://img.shields.io/pypi/v/mpesakit.svg)](https://pypi.org/project/mpesakit)
+[![Downloads](https://pepy.tech/badge/mpesakit)](https://pepy.tech/project/mpesakit)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Byte-Barn/mpesakit/actions)
 
 ---
 
-## The Solution
+Integrating Safaricom's Daraja API from scratch means wrestling with OAuth2 token rotation, security credential encryption, inconsistent sandbox vs. production endpoints, and documentation that rarely connects end-to-end.
 
-**`mpesakit`** eliminates the complexity with a **clean, developer-friendly Python SDK** that:
-
-- **Zero-config setup** — just add your credentials and go
-- **Handles authentication automatically** — OAuth2, tokens, and security
-- **Seamless environment switching** — sandbox ↔ production with one parameter
-- **Pythonic interface** — clean methods that feel natural to Python developers
-- **Batteries included** — everything you need for M-Pesa integration
-- **Production-ready** — end goal is to be used by startups and enterprises across Kenya
-
-### Supported Features
-
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **STK Push (Lipa na M-Pesa)** | Ready | Initiate customer payment prompts (mpesa-express/stk-push.mdx) |
-| **STK Query** | Ready | Query STK push/payment status (mpesa-express/stk-query.mdx) |
-| **C2B Payments** | Ready | Customer-to-Business payments (c2b.mdx) |
-| **B2C Payments** | Ready | Business-to-Customer payouts (b2c.mdx) |
-| **B2C Account Top-up** | Ready | Account top-up flows for B2C (b2c-account-top-up.mdx) |
-| **Business Paybill** | Ready | Paybill integrations for business collections (business-paybill.mdx) |
-| **Business BuyGoods** | Ready | Till/BuyGoods integrations (business-buygoods.mdx) |
-| **Token Management / Auth** | Ready | Automatic OAuth2 handling and auth utilities (auth.mdx) |
-| **Account Balance** | Ready | Check account balances (account-balance.mdx) |
-| **Transaction Reversal** | Ready | Reverse transactions (reversal.mdx) |
-| **Transaction Status** | Ready | Query transaction status (transaction-status.mdx) |
-| **Dynamic QR** | Ready | Generate and manage dynamic QR payments (dynamic-qr.mdx) |
-| **Tax Remittance** | Ready | Tax remittance flows and docs (tax-remittance.mdx) |
-
-> Built on top of [Arlus/mpesa-py](https://github.com/Arlus/mpesa-py) with ❤️ — modernized, cleaned up, and restructured for today's developer needs.
+**`mpesakit`** handles all of that. Add your credentials, call a method, move on.
 
 ---
 
-## Quick Start
-
-### Installation (already here :) )
+## Installation
 
 ```bash
 pip install mpesakit
@@ -67,90 +24,235 @@ pip install mpesakit
 
 ---
 
-## 📖 Complete Setup Guide
+## Quick Start
 
-- For the complete setup guide kindly check the documentation at: [https://mpesakit.dev](https://mpesakit.dev)
-
----
-
-### Security Best Practices
-
-1. **Never commit credentials** to version control
-2. **Use environment variables** for sensitive data
-3. **Implement webhook validation** for callbacks
-4. **Log transactions** for audit trails
-5. **Monitor rate limits** and implement backoff strategies
-6. **Use HTTPS** for all callback URLs
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the community! Here's how you can help:
-
-### Ways to Contribute
-
-- 🐛 **Report bugs** via GitHub Issues
-- 💡 **Suggest features** for the roadmap
-- 📖 **Improve documentation** and examples
-- 🔧 **Submit pull requests** with fixes/features
-- ⭐ **Star the repo** to show support
-
-### Development Setup
+### 1. Set your credentials
 
 ```bash
-# Clone the repository
-git clone https://github.com/rafaeljohn9/mpesakit.git
+export MPESA_CONSUMER_KEY="your_consumer_key"
+export MPESA_CONSUMER_SECRET="your_consumer_secret"
+export MPESA_SHORTCODE="your_shortcode"
+export MPESA_PASSKEY="your_lipa_na_mpesa_passkey"
+export MPESA_PHONE_NUMBER="254712345678"
+```
+
+### 2. Trigger an STK Push
+
+```python
+import os
+from dotenv import load_dotenv
+from mpesakit import MpesaClient
+from mpesakit.mpesa_express import TransactionType
+
+load_dotenv()
+
+client = MpesaClient(
+    consumer_key=os.getenv("MPESA_CONSUMER_KEY"),
+    consumer_secret=os.getenv("MPESA_CONSUMER_SECRET"),
+    environment="sandbox",  # Switch to "production" when ready
+)
+
+response = client.stk_push(
+    business_short_code=int(os.getenv("MPESA_SHORTCODE")),
+    passkey=os.getenv("MPESA_PASSKEY"),
+    transaction_type=TransactionType.CUSTOMER_PAYBILL_ONLINE,
+    amount=250,
+    party_a=os.getenv("MPESA_PHONE_NUMBER"),
+    party_b=os.getenv("MPESA_SHORTCODE"),
+    phone_number=os.getenv("MPESA_PHONE_NUMBER"),
+    callback_url="https://yourdomain.com/mpesa/callback",
+    account_reference="Order-001",
+    transaction_desc="Payment for order",
+)
+
+if response.is_successful():
+    print("Request accepted:", response.CheckoutRequestID)
+else:
+    print("Error:", response.error_message())
+```
+
+### 3. Handle the payment callback
+
+The client exposes `process_*` methods that validate and deserialize incoming Safaricom payloads into typed Pydantic objects — no manual dict parsing required.
+
+```python
+# Example: FastAPI callback handler
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+@app.post("/mpesa/callback")
+async def mpesa_callback(request: Request):
+    payload = await request.json()
+
+    # Validates the payload and returns a typed StkPushSimulateCallback object
+    callback = client.process_stk_callback(payload)
+
+    if callback.is_successful()
+        metadata = callback.Body.stkCallback.CallbackMetadata
+        print(f"Payment confirmed — Receipt: {metadata}")
+    else:
+        print(f"Payment failed: {callback.Body.stkCallback.ResultDesc}")
+
+    return JSONResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
+```
+
+All `process_*` methods follow the same pattern — pass in the raw JSON payload, get back a validated object:
+
+| Method | Returns |
+|--------|---------|
+| `client.process_stk_callback(payload)` | `StkPushSimulateCallback` |
+| `client.process_stk_query_callback(payload)` | `StkPushQueryResponse` |
+| `client.process_b2c_callback(payload)` | `B2CResultCallback` |
+| `client.process_account_balance_callback(payload)` | `AccountBalanceResultCallback` |
+| `client.process_account_balance_timeout(payload)` | `AccountBalanceTimeoutCallback` |
+| `client.process_transcations_callback(payload)` | `TransactionStatusResultCallback` |
+| `client.process_reversal_callback(payload)` | `ReversalResultCallback` |
+| `client.process_tax_remittance_callback(payload)` | `TaxRemittanceResultCallback` |
+| `client.process_dynamic_qr_code_callback(payload)` | `DynamicQRGenerateResponse` |
+| `client.process_b2b_callback(payload)` | `B2BExpressCheckoutCallback` |
+| `client.process_bill_manager_callback(payload)` | `BillManagerPaymentNotificationRequest` |
+| `client.process_ratiba_service_callback(payload)` | `StandingOrderCallback` |
+
+### 4. Error handling
+
+```python
+from mpesakit.errors import MpesaApiException
+
+try:
+    response = client.stk_push(...)
+except MpesaApiException as e:
+    err = e.error
+    print(f"Code: {err.error_code}")       # e.g. AUTH_INVALID_CREDENTIALS
+    print(f"Message: {err.error_message}") # Human-readable description
+    print(f"HTTP status: {err.status_code}")
+    print(f"Request ID: {err.request_id}")
+except Exception as exc:
+    print(f"Unexpected error: {exc}")
+```
+
+---
+
+## More Examples
+
+### B2C — Send money to a customer
+
+```python
+from mpesakit.b2c import B2CCommandIDType
+
+response = client.b2c.send_payment(
+    originator_conversation_id="ocid-1234-5678",
+    initiator_name="your_initiator_name",
+    security_credential="your_encrypted_security_credential",
+    command_id=B2CCommandIDType.BusinessPayment,
+    amount=1500,
+    party_a="600999",           # Your bulk disbursement shortcode
+    party_b="254712345678",     # Recipient phone number (normalized by SDK)
+    remarks="Refund for order 042",
+    queue_timeout_url="https://yourdomain.com/mpesa/timeout",
+    result_url="https://yourdomain.com/mpesa/result",
+)
+
+if response.is_successful():
+    print("Payout sent:", response.ResponseDescription)
+```
+
+> **Note:** B2C in production requires a Bulk Disbursement Account from Safaricom — a standard PayBill or Till will not work. See the [B2C docs](https://mpesakit.dev/b2c) for details.
+
+### STK Query — Check a push status
+
+```python
+response = client.stk_query(
+    business_short_code=int(os.getenv("MPESA_SHORTCODE")),
+    passkey=os.getenv("MPESA_PASSKEY"),
+    checkout_request_id="ws_CO_191220191020363925",
+)
+```
+
+### Switching to production
+
+```python
+client = MpesaClient(
+    consumer_key="...",
+    consumer_secret="...",
+    environment="production",  # That's all it takes
+)
+```
+
+---
+
+## Supported APIs
+
+| API | Status | Description |
+|-----|--------|-------------|
+| **STK Push** | ✅ Ready | Prompt a customer to enter their M-Pesa PIN to pay |
+| **STK Query** | ✅ Ready | Check the status of an STK Push request |
+| **C2B Payments** | ✅ Ready | Receive payments from customers via paybill or till |
+| **B2C Payments** | ✅ Ready | Send money to customers or staff |
+| **B2C Account Top-up** | ✅ Ready | Top up B2C utility accounts |
+| **Business Paybill** | ✅ Ready | Business-to-business paybill transfers |
+| **Business BuyGoods** | ✅ Ready | Business-to-business till transfers |
+| **Token Management** | ✅ Ready | Automatic OAuth2 token handling — no manual refresh needed |
+| **Account Balance** | ✅ Ready | Query your M-Pesa account balance |
+| **Transaction Status** | ✅ Ready | Look up the status of any past transaction |
+| **Transaction Reversal** | ✅ Ready | Reverse erroneous transactions |
+| **Dynamic QR** | ✅ Ready | Generate QR codes for M-Pesa payments |
+| **Tax Remittance** | ✅ Ready | Submit tax remittances via M-Pesa |
+
+---
+
+## Security Best Practices
+
+- **Never commit credentials** to version control — use environment variables or a secrets manager
+- **Validate callbacks** using `is_mpesa_ip_allowed` to restrict requests to known Safaricom IP ranges
+- **Use HTTPS** for all callback URLs — Safaricom will not deliver to plain HTTP in production
+- **Log transaction IDs** (`OriginatorConversationID`, `ConversationID`) for reconciliation and dispute resolution
+- **Persist callback payloads** before returning an acknowledgement, to protect against processing failures
+
+---
+
+## Full Documentation
+
+API reference, webhook guides, and production checklist: **[mpesakit.dev](https://mpesakit.dev)**
+
+---
+
+## Contributing
+
+```bash
+git clone https://github.com/Byte-Barn/mpesakit.git
 cd mpesakit
 
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install in development mode
 pip install -e ".[dev]"
-
-# Run tests
 pytest tests/unit
 ```
 
-### Code Standards
+Ways to contribute:
+- **Report bugs** — [GitHub Issues](https://github.com/Byte-Barn/mpesakit/issues)
+- **Suggest features** — [GitHub Discussions](https://github.com/Byte-Barn/mpesakit/discussions)
+- **Submit a PR** — please include tests and update docs for any API changes
+- **Join the community** — [Discord](https://discord.gg/hNxTew523E)
 
-- Follow PEP 8 style guidelines
-- Include type hints where appropriate
-- Write comprehensive tests for new features
-- Update documentation for any API changes
-
----
-
-## 📞 Support & Community
-
-- 📖 **Documentation**: [Full API docs coming soon]
-- 🐛 **Issues**: [GitHub Issues](https://github.com/rafaeljohn9/mpesakit/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/rafaeljohn9/mpesakit/discussions)
-- 📧 **Email**: <johnmkagunda@gmail.com>
+Please follow PEP 8 and include type hints in new code.
 
 ---
 
-## 🙏 Attribution & Thanks
+## Support
 
-This project began as a fork of the fantastic [`Arlus/mpesa-py`](https://github.com/Arlus/mpesa-py) by [@Arlus](https://github.com/Arlus).
-
-**What we've added:**
-
-- **Modular architecture** for better maintainability
-- **Developer-first design** with intuitive APIs
-- **Comprehensive testing** suite
-- **Better documentation** and examples
-- **Production-ready** features and error handling
-
-Special thanks to the original contributors and the broader Python community in Kenya.
+- 📖 Docs: [mpesakit.dev](https://mpesakit.dev)
+- 🐛 Issues: [github.com/Byte-Barn/mpesakit/issues](https://github.com/Byte-Barn/mpesakit/issues)
+- 💬 Discussions: [github.com/Byte-Barn/mpesakit/discussions](https://github.com/Byte-Barn/mpesakit/discussions)
+- 📧 Email: johnmkagunda@gmail.com
 
 ---
 
-## 📄 License
+## License
 
-Licensed under the [Apache 2.0 License](LICENSE) — free for commercial and private use.
+[Apache 2.0](LICENSE) — free for commercial and private use.
 
 ---
 
@@ -158,6 +260,8 @@ Licensed under the [Apache 2.0 License](LICENSE) — free for commercial and pri
 
 **Made with ❤️ for the Kenyan developer community**
 
-[⭐ Star this repo](https://github.com/rafaeljohn9/mpesakit) | [🐛 Report Issue](https://github.com/rafaeljohn9/mpesakit/issues) | [💡 Request Feature](https://github.com/rafaeljohn9/mpesakit/issues/new)
+[⭐ Star this repo](https://github.com/Byte-Barn/mpesakit) · [🐛 Report a bug](https://github.com/Byte-Barn/mpesakit/issues) · [💡 Request a feature](https://github.com/Byte-Barn/mpesakit/issues/new)
+
+*Built on the shoulders of [`Arlus/mpesa-py`](https://github.com/Arlus/mpesa-py)*
 
 </div>
