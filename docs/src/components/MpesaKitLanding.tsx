@@ -307,6 +307,12 @@ export const MpesaKitLanding: React.FC = () => {
         status: "maintenance" as "working" | "down" | "maintenance",
         note: "On hold per Safaricom API support",
         link: { text: "Ratiba (notes)", href: "https://developer.safaricom.co.ke/APIs/MpesaRatiba" }
+      },
+        {
+        name: "M-Pesa IMSI",
+        status: "maintenance" as "working" | "down" | "maintenance",
+        note: "IMSI checkATI  (Paid API product)",
+        link: { text: "IMSI (notes)", href: "/imsi" }
       }
     ]
   };
