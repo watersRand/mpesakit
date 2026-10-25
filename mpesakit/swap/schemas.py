@@ -2,9 +2,11 @@
 
 It includes models for swap requests and  responses.
 """
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from mpesakit.utils.phone import normalize_phone_number
 from mpesakit.utils.dates import is_daraja_default_date
+
 
 class SwapRequest(BaseModel):
     """Request schema for Safaricom Daraja SWAP API (/imsi/v2/checkATI)."""

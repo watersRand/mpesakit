@@ -1,4 +1,5 @@
 """This module defines schemas for Safaricom Daraja IMSI API requests and responses (V1, V2, V3)."""
+
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from mpesakit.utils.phone import normalize_phone_number
@@ -72,7 +73,9 @@ class BaseIMSISelfResponse(BaseModel, StatusMixin):
 
     requestRefID: str = Field(..., description="Unique transaction reference ID.")
     responseCode: Optional[str] = Field(None, description="API status code e.g. '200'.")
-    responseDesc: Optional[str] = Field(None, description="Response status description.")
+    responseDesc: Optional[str] = Field(
+        None, description="Response status description."
+    )
     customerNumber: Optional[str] = Field(None, description="The requested MSISDN.")
 
 
@@ -92,5 +95,3 @@ class IMSIV3Response(BaseIMSISelfResponse):
     """IMSI V3 response schema (Hashed IMSI)."""
 
     imsi: Optional[str] = Field(None, description="Hashed IMSI string.")
-
-

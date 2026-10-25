@@ -68,7 +68,7 @@ def make_mock_exception(code: str, message: str) -> MpesaApiException:
     mock_error = MagicMock()
     mock_error.error_code = code
     mock_error.error_message = message
-    type(mock_error).__str__ = MagicMock(return_value = f"[{code}] {message}")
+    type(mock_error).__str__ = MagicMock(return_value=f"[{code}] {message}")
     return MpesaApiException(mock_error)
 
 
@@ -89,7 +89,6 @@ def test_swap_response_helper_properties(mock_success_response, mock_swapped_res
     response = SwapResponse(**mock_success_response)
     assert response.is_successful is True
     assert response.is_recently_swapped is False
-
 
     swapped_response = SwapResponse(**mock_swapped_response)
     assert swapped_response.is_successful is True
